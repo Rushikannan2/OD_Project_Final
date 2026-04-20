@@ -3,7 +3,7 @@ import torch.nn.functional as F
 import cv2
 import os
 
-from model_loader import vae, unet, scheduler, device
+from backend.model_loader import vae, unet, scheduler, device  # ✅ FIXED
 from torchvision.utils import save_image
 
 # ================================
@@ -36,7 +36,8 @@ def get_condition(img):
     edges = edges / (edges.amax(dim=[1,2,3], keepdim=True) + 1e-8)
     edges = edges * 2 - 1
 
-    edges = F.avg_pool2d(edges, 3, stride=1, padding=1)  # smoother conditioning
+    # smoother conditioning
+    edges = F.avg_pool2d(edges, 3, stride=1, padding=1)
 
     return F.interpolate(edges, size=(64,64))
 
@@ -79,10 +80,10 @@ def generate_image():
     cond = get_condition(img)
 
     # ================================
-    # LATENT INIT (UNCHANGED)
+    # LATENT INIT
     # ================================
     mean, _ = vae.encode(img)
-    z = torch.randn_like(mean)   # ✅ keeping your original logic
+    z = torch.randn_like(mean)
 
     # ================================
     # SAMPLING LOOP
@@ -103,7 +104,7 @@ def generate_image():
     # ================================
     # SAVE OUTPUT
     # ================================
-    save_image(out.cpu(), output_path)  # safer for CPU/GPU
+    save_image(out.cpu(), output_path)
 
     print(f"💾 Output saved at: {output_path}")
 

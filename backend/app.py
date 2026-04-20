@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, render_template
-from inference import generate_image
+from backend.inference import generate_image   # ✅ FIXED
 from huggingface_hub import hf_hub_download
 import os
 

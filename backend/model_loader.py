@@ -1,16 +1,8 @@
 import torch
 import os
 from huggingface_hub import hf_hub_download
-from vae import VAE
-from ldm import get_unet, get_scheduler
-
-# ================================
-# HF TOKEN (FROM RENDER ENV)
-# ================================
-HF_TOKEN = os.getenv("HF_TOKEN")
-
-if HF_TOKEN is None:
-    raise ValueError("❌ HF_TOKEN not set in environment variables")
+from backend.vae import VAE
+from backend.ldm import get_unet, get_scheduler
 
 # ================================
 # DEVICE
@@ -19,67 +11,77 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"🚀 Using device: {device}")
 
 # ================================
+# HF TOKEN
+# ================================
+HF_TOKEN = os.getenv("HF_TOKEN")
+
+# ================================
 # HUGGING FACE REPO
 # ================================
 REPO_ID = "rushikannan/OCT-Model"
 
 # ================================
-# DOWNLOAD MODELS FROM HF
+# GLOBAL CACHE (LAZY LOAD)
 # ================================
-print("⬇ Downloading models from Hugging Face...")
-
-VAE_PATH = hf_hub_download(
-    repo_id=REPO_ID,
-    filename="VAE_CONDITIONAL_LDM.pth",
-    token=HF_TOKEN
-)
-
-LDM_PATH = hf_hub_download(
-    repo_id=REPO_ID,
-    filename="conditional_ldm_best.pth",
-    token=HF_TOKEN
-)
+vae = None
+unet = None
+scheduler = None
 
 # ================================
-# LOAD VAE
+# LOAD MODELS (LAZY)
 # ================================
-print("🔄 Loading VAE...")
+def load_models():
+    global vae, unet, scheduler
 
-vae = VAE().to(device)
-vae.load_state_dict(torch.load(VAE_PATH, map_location=device))
-vae.eval()
+    if vae is not None:
+        return vae, unet, scheduler  # already loaded
 
-# ================================
-# LOAD UNET
-# ================================
-print("🔄 Loading UNet...")
+    print("⬇ Downloading models from Hugging Face...")
 
-unet = get_unet().to(device)
+    VAE_PATH = hf_hub_download(
+        repo_id=REPO_ID,
+        filename="VAE_CONDITIONAL_LDM.pth",
+        token=HF_TOKEN
+    )
 
-ckpt = torch.load(LDM_PATH, map_location=device)
+    LDM_PATH = hf_hub_download(
+        repo_id=REPO_ID,
+        filename="conditional_ldm_best.pth",
+        token=HF_TOKEN
+    )
 
-if isinstance(ckpt, dict):
+    print("🔄 Loading VAE...")
+    vae_model = VAE().to(device)
+    vae_model.load_state_dict(torch.load(VAE_PATH, map_location=device))
+    vae_model.eval()
 
-    if "ema_model" in ckpt:
-        print("✅ Loading EMA model (BEST)")
-        unet.load_state_dict(ckpt["ema_model"])
+    print("🔄 Loading UNet...")
+    unet_model = get_unet().to(device)
 
-    elif "model" in ckpt:
-        print("⚠ Loading raw model")
-        unet.load_state_dict(ckpt["model"])
+    ckpt = torch.load(LDM_PATH, map_location=device)
 
+    if isinstance(ckpt, dict):
+        if "ema_model" in ckpt:
+            print("✅ Loading EMA model (BEST)")
+            unet_model.load_state_dict(ckpt["ema_model"])
+        elif "model" in ckpt:
+            print("⚠ Loading raw model")
+            unet_model.load_state_dict(ckpt["model"])
+        else:
+            print("⚠ Loading direct state_dict")
+            unet_model.load_state_dict(ckpt)
     else:
-        print("⚠ Loading direct state_dict")
-        unet.load_state_dict(ckpt)
+        unet_model.load_state_dict(ckpt)
 
-else:
-    unet.load_state_dict(ckpt)
+    unet_model.eval()
 
-unet.eval()
+    sched = get_scheduler()
 
-# ================================
-# SCHEDULER
-# ================================
-scheduler = get_scheduler()
+    # store globally
+    vae = vae_model
+    unet = unet_model
+    scheduler = sched
 
-print("✅ Models loaded successfully from Hugging Face!")
+    print("✅ Models loaded successfully!")
+
+    return vae, unet, scheduler
