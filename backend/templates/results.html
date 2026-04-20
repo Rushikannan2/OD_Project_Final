@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Results — OCT Synthesis</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07080a; --surface: #0f1115; --surface2: #161a1f;
+      --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.14);
+      --accent: #00e5c0; --accent2: #0094ff; --accent-dim: rgba(0,229,192,0.10);
+      --amber: #f59e0b; --amber-dim: rgba(245,158,11,0.1);
+      --red: #f87171; --red-dim: rgba(248,113,113,0.08);
+      --text: #f0f2f5; --text-muted: #6b7280; --text-dim: #374151;
+      --mono: 'DM Mono', monospace; --sans: 'Syne', sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: linear-gradient(rgba(0,229,192,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,192,0.03) 1px, transparent 1px);
+      background-size: 48px 48px; pointer-events: none; z-index: 0;
+    }
+    body::after {
+      content: ''; position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
+      width: 700px; height: 500px;
+      background: radial-gradient(ellipse, rgba(0,229,192,0.05) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem; height: 60px;
+      background: rgba(7,8,10,0.88); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 11px; font-weight: 500; color: #07080a;
+    }
+    .nav-title { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
+    .nav-links { display: flex; align-items: center; gap: 2px; list-style: none; }
+    .nav-links a {
+      font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--text-muted); text-decoration: none;
+      padding: 6px 14px; border-radius: 6px; border: 1px solid transparent;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      color: var(--accent); border-color: rgba(0,229,192,0.2); background: rgba(0,229,192,0.05);
+    }
+    .page { position: relative; z-index: 1; max-width: 920px; margin: 0 auto; padding: 4rem 2rem 5rem; }
+    .page-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent); background: var(--accent-dim); border: 1px solid rgba(0,229,192,0.2);
+      padding: 5px 14px; border-radius: 100px; margin-bottom: 1.5rem;
+    }
+    .page-eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 2s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    .page-title { font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+    .page-title span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .page-sub { font-family: var(--mono); font-size: 13px; color: var(--text-muted); line-height: 1.7; max-width: 520px; margin-bottom: 3rem; }
+    .divider { height: 1px; background: var(--border); margin: 2.5rem 0; }
+    .section-heading {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: var(--text);
+      margin-bottom: 1.2rem;
+    }
+    .section-heading .num {
+      width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+      background: var(--accent-dim); border: 1px solid rgba(0,229,192,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 11px; color: var(--accent);
+    }
+    .prose { font-family: var(--mono); font-size: 13px; font-weight: 300; color: var(--text-muted); line-height: 1.85; margin-bottom: 1.5rem; }
+
+    /* METRIC CARDS */
+    .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 2rem; }
+    @media (max-width: 700px) { .metric-grid { grid-template-columns: repeat(2, 1fr); } }
+    .metric-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.2rem; position: relative; overflow: hidden; transition: border-color 0.2s;
+    }
+    .metric-card:hover { border-color: var(--border-hover); }
+    .metric-card .glow {
+      position: absolute; top: 0; right: 0; width: 60px; height: 60px;
+      border-radius: 50%; opacity: 0.06; pointer-events: none;
+    }
+    .metric-name { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
+    .metric-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+    .metric-val { font-family: var(--mono); font-size: 18px; font-weight: 500; }
+    .metric-val.good { color: var(--accent); }
+    .metric-val.bad { color: var(--text-muted); }
+    .metric-model { font-family: var(--mono); font-size: 9px; color: var(--text-dim); }
+    .metric-delta {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; margin-top: 6px;
+    }
+    .metric-delta.up { color: var(--accent); background: var(--accent-dim); }
+    .metric-delta.down-good { color: var(--accent); background: var(--accent-dim); }
+
+    /* BAR CHART */
+    .chart-wrap {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.5rem; margin-bottom: 2rem;
+    }
+    .chart-title { font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 1.2rem; }
+    .chart-legend { display: flex; gap: 16px; margin-bottom: 1rem; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+    .bar-group { margin-bottom: 10px; }
+    .bar-label { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-bottom: 4px; }
+    .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+    .bar-track { flex: 1; height: 20px; background: var(--surface2); border-radius: 4px; overflow: hidden; position: relative; }
+    .bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; display: flex; align-items: center; padding-left: 8px; }
+    .bar-fill.uncond { background: rgba(0,148,255,0.35); }
+    .bar-fill.cond { background: rgba(0,229,192,0.4); }
+    .bar-num { font-family: var(--mono); font-size: 10px; color: var(--text); white-space: nowrap; }
+    .bar-model-label { font-family: var(--mono); font-size: 10px; color: var(--text-dim); width: 60px; flex-shrink: 0; text-align: right; }
+
+    /* RESULTS TABLE */
+    .results-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 2rem; }
+    .results-table { width: 100%; border-collapse: collapse; }
+    .results-table th {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-dim); padding: 10px 16px; text-align: left;
+      border-bottom: 1px solid var(--border); background: var(--surface2);
+    }
+    .results-table th.cond-col { color: var(--accent); background: rgba(0,229,192,0.04); }
+    .results-table td { font-family: var(--mono); font-size: 13px; padding: 11px 16px; border-bottom: 1px solid var(--border); }
+    .results-table tr:last-child td { border-bottom: none; }
+    .results-table .metric-col { color: var(--text); font-weight: 500; }
+    .results-table .uncond-col { color: var(--text-muted); }
+    .results-table .cond-val { color: var(--accent); font-weight: 500; }
+    .results-table .badge {
+      display: inline-block; font-size: 9px; padding: 2px 6px; border-radius: 4px; margin-left: 8px;
+      background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(0,229,192,0.2);
+    }
+    .results-table tr:hover td { background: rgba(255,255,255,0.015); }
+
+    /* CONCLUSION */
+    .conclusion-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 2rem; }
+    @media (max-width: 580px) { .conclusion-grid { grid-template-columns: 1fr; } }
+    .concl-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem;
+    }
+    .concl-card.highlight { border-color: rgba(0,229,192,0.2); background: rgba(0,229,192,0.03); }
+    .concl-icon { font-size: 18px; margin-bottom: 8px; }
+    .concl-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+    .concl-desc { font-family: var(--mono); font-size: 11px; font-weight: 300; color: var(--text-muted); line-height: 1.65; }
+
+    /* FUTURE WORK */
+    .future-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 2rem; }
+    .future-item { display: flex; gap: 14px; align-items: flex-start; }
+    .future-num {
+      font-family: var(--mono); font-size: 10px; color: var(--accent2); width: 20px;
+      flex-shrink: 0; padding-top: 2px;
+    }
+    .future-text { font-family: var(--mono); font-size: 12px; font-weight: 300; color: var(--text-muted); line-height: 1.65; }
+    .future-text strong { color: var(--text); font-weight: 500; }
+
+    /* REFS */
+    .refs-list { display: flex; flex-direction: column; gap: 8px; }
+    .ref-item { display: flex; gap: 12px; }
+    .ref-num { font-family: var(--mono); font-size: 10px; color: var(--accent); width: 20px; flex-shrink: 0; padding-top: 2px; }
+    .ref-text { font-family: var(--mono); font-size: 11px; font-weight: 300; color: var(--text-muted); line-height: 1.6; }
+    .ref-text a { color: var(--accent2); text-decoration: none; }
+    .ref-text a:hover { text-decoration: underline; }
+
+    .fade-up { opacity: 0; transform: translateY(16px); animation: fadeUp 0.5s ease forwards; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+    .d1{animation-delay:0.05s} .d2{animation-delay:0.15s} .d3{animation-delay:0.25s}
+
+    footer { position: relative; z-index: 1; text-align: center; padding: 2rem; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em; }
+    footer span { color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="nav-brand">
+      <div class="nav-logo">OCT</div>
+      <span class="nav-title">Generator</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/about">About</a></li>
+      <li><a href="/method">Methodology</a></li>
+      <li><a href="/results" class="active">Results</a></li>
+    </ul>
+  </nav>
+
+  <div class="page">
+
+    <div class="fade-up d1">
+      <div class="page-eyebrow">Quantitative Evaluation</div>
+      <h1 class="page-title">Results &amp;<br/><span>Analysis</span></h1>
+      <p class="page-sub">Comparative performance of Unconditional vs Conditional LDM across all evaluation metrics, with conclusions and future directions.</p>
+    </div>
+
+    <!-- METRIC CARDS -->
+    <div class="fade-up d2">
+      <div class="section-heading"><div class="num">01</div>Key Metrics — Conditional LDM</div>
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="glow" style="background:var(--accent);"></div>
+          <div class="metric-name">Train Loss</div>
+          <div class="metric-row"><span class="metric-val good">0.0099</span></div>
+          <div class="metric-model">Conditional LDM</div>
+          <div class="metric-delta down-good">↓ 70.9% vs uncond.</div>
+        </div>
+        <div class="metric-card">
+          <div class="glow" style="background:var(--accent2);"></div>
+          <div class="metric-name">SSIM</div>
+          <div class="metric-row"><span class="metric-val good">0.4198</span></div>
+          <div class="metric-model">Conditional LDM</div>
+          <div class="metric-delta up">↑ 82.5% vs uncond.</div>
+        </div>
+        <div class="metric-card">
+          <div class="glow" style="background:var(--amber);"></div>
+          <div class="metric-name">LPIPS</div>
+          <div class="metric-row"><span class="metric-val good">0.4722</span></div>
+          <div class="metric-model">Conditional LDM</div>
+          <div class="metric-delta down-good">↓ 33.5% vs uncond.</div>
+        </div>
+        <div class="metric-card">
+          <div class="glow" style="background:var(--accent);"></div>
+          <div class="metric-name">PSNR (dB)</div>
+          <div class="metric-row"><span class="metric-val good">20.30</span></div>
+          <div class="metric-model">Conditional LDM</div>
+          <div class="metric-delta up">↑ 20.8% vs uncond.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BAR CHART -->
+    <div class="fade-up d2">
+      <div class="chart-wrap">
+        <div class="chart-title">Unconditional vs Conditional LDM — All Metrics</div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(0,148,255,0.5)"></div>Unconditional LDM</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(0,229,192,0.55)"></div>Conditional LDM</div>
+        </div>
+
+        <div class="bar-group">
+          <div class="bar-label">TRAIN LOSS (lower is better)</div>
+          <div class="bar-row">
+            <div class="bar-model-label">Uncond.</div>
+            <div class="bar-track"><div class="bar-fill uncond" style="width:85%" id="b1"><span class="bar-num">0.0340</span></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-model-label">Cond.</div>
+            <div class="bar-track"><div class="bar-fill cond" style="width:25%" id="b2"><span class="bar-num">0.0099</span></div></div>
+          </div>
+        </div>
+
+        <div class="bar-group" style="margin-top:14px">
+          <div class="bar-label">SSIM (higher is better)</div>
+          <div class="bar-row">
+            <div class="bar-model-label">Uncond.</div>
+            <div class="bar-track"><div class="bar-fill uncond" style="width:46%"><span class="bar-num">0.23</span></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-model-label">Cond.</div>
+            <div class="bar-track"><div class="bar-fill cond" style="width:84%"><span class="bar-num">0.4198</span></div></div>
+          </div>
+        </div>
+
+        <div class="bar-group" style="margin-top:14px">
+          <div class="bar-label">LPIPS (lower is better)</div>
+          <div class="bar-row">
+            <div class="bar-model-label">Uncond.</div>
+            <div class="bar-track"><div class="bar-fill uncond" style="width:100%"><span class="bar-num">0.71</span></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-model-label">Cond.</div>
+            <div class="bar-track"><div class="bar-fill cond" style="width:66%"><span class="bar-num">0.4722</span></div></div>
+          </div>
+        </div>
+
+        <div class="bar-group" style="margin-top:14px">
+          <div class="bar-label">PSNR dB (higher is better)</div>
+          <div class="bar-row">
+            <div class="bar-model-label">Uncond.</div>
+            <div class="bar-track"><div class="bar-fill uncond" style="width:65%"><span class="bar-num">16.80 dB</span></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-model-label">Cond.</div>
+            <div class="bar-track"><div class="bar-fill cond" style="width:80%"><span class="bar-num">20.30 dB</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS TABLE -->
+    <div class="fade-up d3">
+      <div class="section-heading"><div class="num">02</div>Quantitative Comparison Table</div>
+      <div class="results-table-wrap">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Unconditional LDM</th>
+              <th class="cond-col">Conditional LDM ✓</th>
+              <th>Direction</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="metric-col">Train Loss</td>
+              <td class="uncond-col">0.0340</td>
+              <td class="cond-val">0.009891 <span class="badge">best</span></td>
+              <td><span style="font-family:var(--mono);font-size:11px;color:var(--text-muted)">↓ lower better</span></td>
+            </tr>
+            <tr>
+              <td class="metric-col">SSIM</td>
+              <td class="uncond-col">0.2300</td>
+              <td class="cond-val">0.419824 <span class="badge">best</span></td>
+              <td><span style="font-family:var(--mono);font-size:11px;color:var(--text-muted)">↑ higher better</span></td>
+            </tr>
+            <tr>
+              <td class="metric-col">LPIPS</td>
+              <td class="uncond-col">0.7100</td>
+              <td class="cond-val">0.472227 <span class="badge">best</span></td>
+              <td><span style="font-family:var(--mono);font-size:11px;color:var(--text-muted)">↓ lower better</span></td>
+            </tr>
+            <tr>
+              <td class="metric-col">PSNR (dB)</td>
+              <td class="uncond-col">16.8000</td>
+              <td class="cond-val">20.2962 <span class="badge">best</span></td>
+              <td><span style="font-family:var(--mono);font-size:11px;color:var(--text-muted)">↑ higher better</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="prose">The Conditional LDM outperforms the Unconditional LDM across all four metrics. Sobel edge conditioning provides structural guidance that significantly improves anatomical consistency, retinal layer sharpness, and overall perceptual quality of generated OCT images.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- CONCLUSIONS -->
+    <div class="fade-up d3">
+      <div class="section-heading"><div class="num">03</div>Conclusions</div>
+      <div class="conclusion-grid">
+        <div class="concl-card highlight">
+          <div class="concl-icon">✓</div>
+          <div class="concl-title">Latent Space Diffusion Works</div>
+          <div class="concl-desc">Operating in compressed latent space significantly reduced GPU memory and training time while generating high-resolution 512×512 OCT images — practical under academic compute constraints.</div>
+        </div>
+        <div class="concl-card highlight">
+          <div class="concl-icon">✓</div>
+          <div class="concl-title">Conditioning Dramatically Helps</div>
+          <div class="concl-desc">Sobel edge-based conditioning improved SSIM by 82.5% and reduced training loss by 70.9%, confirming that structural guidance is essential for anatomically consistent OCT synthesis.</div>
+        </div>
+        <div class="concl-card">
+          <div class="concl-icon">⚠</div>
+          <div class="concl-title">GPU Constraints Limit Scale</div>
+          <div class="concl-desc">Experiments were conducted on a 10K subset of the full 100K dataset due to GPU limitations. Results may improve further with full-scale training and higher batch sizes.</div>
+        </div>
+        <div class="concl-card">
+          <div class="concl-icon">→</div>
+          <div class="concl-title">Data Augmentation Potential</div>
+          <div class="concl-desc">The generated synthetic OCT images have direct applications in data augmentation for downstream retinal disease classifiers, reducing dependency on large annotated datasets.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- FUTURE WORK -->
+    <div class="fade-up d3">
+      <div class="section-heading"><div class="num">04</div>Future Directions</div>
+      <div class="future-list">
+        <div class="future-item"><div class="future-num">01</div><div class="future-text"><strong>Disease-label conditioning:</strong> Extend the conditional framework by incorporating disease labels (DME, glaucoma, normal) or segmentation masks for targeted pathology-specific image generation.</div></div>
+        <div class="future-item"><div class="future-num">02</div><div class="future-text"><strong>Faster sampling strategies:</strong> Compare DDIM, PLMS, and consistency models to reduce inference steps and enable real-time OCT synthesis for clinical deployment.</div></div>
+        <div class="future-item"><div class="future-num">03</div><div class="future-text"><strong>Attention-based mechanisms:</strong> Integrate cross-attention layers and advanced conditioning to improve fine-grained structural details in generated retinal layers.</div></div>
+        <div class="future-item"><div class="future-num">04</div><div class="future-text"><strong>Full 100K dataset training:</strong> Utilize the complete dataset to significantly improve model generalization and robustness across different scanner domains.</div></div>
+        <div class="future-item"><div class="future-num">05</div><div class="future-text"><strong>Flow-based generative models:</strong> Investigate normalizing flows as an alternative to diffusion for potentially faster and more deterministic OCT image synthesis.</div></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    
+    </div>
+
+  </div>
+
+  <footer>OCT Generator &nbsp;·&nbsp; <span>VT Rushi Kannan · 2310080010</span> &nbsp;·&nbsp; KL University 2026</footer>
+</body>
+</html>

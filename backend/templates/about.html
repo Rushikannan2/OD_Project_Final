@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About — OCT Synthesis</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07080a; --surface: #0f1115; --surface2: #161a1f;
+      --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.14);
+      --accent: #00e5c0; --accent2: #0094ff; --accent-dim: rgba(0,229,192,0.10);
+      --text: #f0f2f5; --text-muted: #6b7280; --text-dim: #374151;
+      --mono: 'DM Mono', monospace; --sans: 'Syne', sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: linear-gradient(rgba(0,229,192,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,192,0.03) 1px, transparent 1px);
+      background-size: 48px 48px; pointer-events: none; z-index: 0;
+    }
+    body::after {
+      content: ''; position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
+      width: 700px; height: 500px;
+      background: radial-gradient(ellipse, rgba(0,229,192,0.05) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem; height: 60px;
+      background: rgba(7,8,10,0.88); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 11px; font-weight: 500; color: #07080a;
+    }
+    .nav-title { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
+    .nav-links { display: flex; align-items: center; gap: 2px; list-style: none; }
+    .nav-links a {
+      font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--text-muted); text-decoration: none;
+      padding: 6px 14px; border-radius: 6px; border: 1px solid transparent;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      color: var(--accent); border-color: rgba(0,229,192,0.2); background: rgba(0,229,192,0.05);
+    }
+
+    .page { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 4rem 2rem 5rem; }
+
+    .page-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent); background: var(--accent-dim); border: 1px solid rgba(0,229,192,0.2);
+      padding: 5px 14px; border-radius: 100px; margin-bottom: 1.5rem;
+    }
+    .page-eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 2s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    .page-title { font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+    .page-title span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .page-sub { font-family: var(--mono); font-size: 13px; color: var(--text-muted); line-height: 1.7; max-width: 520px; margin-bottom: 3rem; }
+
+    .divider { height: 1px; background: var(--border); margin: 2.5rem 0; }
+
+    /* PROJECT OVERVIEW */
+    .overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 2rem; }
+    .overview-cell { background: var(--surface); padding: 1.5rem; }
+    .overview-cell:first-child { grid-column: 1 / -1; background: var(--surface2); }
+    .cell-label { font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
+    .cell-value { font-size: 15px; color: var(--text); line-height: 1.6; }
+    .cell-value.accent { color: var(--accent); font-weight: 600; }
+    .cell-value.mono { font-family: var(--mono); font-size: 13px; }
+    @media (max-width: 580px) { .overview-grid { grid-template-columns: 1fr; } }
+
+    /* PROBLEM SECTION */
+    .section-heading {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: var(--text);
+      margin-bottom: 1.2rem;
+    }
+    .section-heading .num {
+      width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+      background: var(--accent-dim); border: 1px solid rgba(0,229,192,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 11px; color: var(--accent);
+    }
+    .prose { font-family: var(--mono); font-size: 13px; font-weight: 300; color: var(--text-muted); line-height: 1.85; margin-bottom: 1.5rem; }
+
+    /* CHALLENGE CARDS */
+    .challenge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 2rem; }
+    @media (max-width: 600px) { .challenge-grid { grid-template-columns: 1fr; } }
+    .challenge-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.2rem; transition: border-color 0.2s;
+    }
+    .challenge-card:hover { border-color: var(--border-hover); }
+    .challenge-icon { font-size: 20px; margin-bottom: 10px; }
+    .challenge-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .challenge-desc { font-family: var(--mono); font-size: 11px; font-weight: 300; color: var(--text-muted); line-height: 1.6; }
+
+    /* SOLUTION APPROACH */
+    .solution-flow { display: flex; flex-direction: column; gap: 0; margin-bottom: 2rem; }
+    .flow-step { display: flex; gap: 16px; position: relative; }
+    .flow-step:not(:last-child)::after {
+      content: ''; position: absolute; left: 15px; top: 40px; bottom: -12px;
+      width: 1px; background: var(--border);
+    }
+    .flow-dot {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      border: 1px solid rgba(0,229,192,0.3); background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 11px; color: var(--accent); font-weight: 500;
+    }
+    .flow-body { padding-top: 5px; padding-bottom: 24px; }
+    .flow-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .flow-desc { font-family: var(--mono); font-size: 11px; font-weight: 300; color: var(--text-muted); line-height: 1.6; }
+
+    /* TEAM CARD */
+    .team-card {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 16px;
+      padding: 1.8rem; display: flex; align-items: center; gap: 1.5rem;
+    }
+    .avatar {
+      width: 56px; height: 56px; border-radius: 14px; flex-shrink: 0;
+      background: linear-gradient(135deg, rgba(0,229,192,0.15), rgba(0,148,255,0.15));
+      border: 1px solid rgba(0,229,192,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 16px; font-weight: 500; color: var(--accent);
+    }
+    .team-name { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .team-roll { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 0.06em; margin-bottom: 2px; }
+    .team-dept { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+    .team-guide { margin-top: 0.5rem; font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+    .team-guide span { color: var(--text-muted); }
+
+    /* INSTITUTION */
+    .inst-block {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.5rem; display: flex; gap: 1rem; align-items: flex-start; margin-top: 1.5rem;
+    }
+    .inst-icon {
+      width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(0,148,255,0.1); border: 1px solid rgba(0,148,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .inst-icon svg { width: 18px; height: 18px; color: var(--accent2); }
+    .inst-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .inst-detail { font-family: var(--mono); font-size: 11px; color: var(--text-muted); line-height: 1.7; }
+
+    .fade-up { opacity: 0; transform: translateY(16px); animation: fadeUp 0.5s ease forwards; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+    .d1 { animation-delay: 0.05s; } .d2 { animation-delay: 0.15s; } .d3 { animation-delay: 0.25s; }
+
+    footer { position: relative; z-index: 1; text-align: center; padding: 2rem; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em; }
+    footer span { color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="nav-brand">
+      <div class="nav-logo">OCT</div>
+      <span class="nav-title">Generator</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/about" class="active">About</a></li>
+      <li><a href="/method">Methodology</a></li>
+      <li><a href="/results">Results</a></li>
+    </ul>
+  </nav>
+
+  <div class="page">
+    <div class="fade-up d1">
+      <div class="page-eyebrow">Project Overview</div>
+      <h1 class="page-title">About This<br/><span>Research</span></h1>
+      <p class="page-sub">OCT Synthesis using Diffusion Models — a B.Tech project in AI &amp; Data Science exploring latent diffusion for retinal image generation.</p>
+    </div>
+
+    <div class="fade-up d2">
+      <div class="overview-grid">
+        <div class="overview-cell">
+          <div class="cell-label">Abstract</div>
+          <div class="cell-value" style="font-size:13px; font-family: var(--mono); font-weight:300; line-height:1.8; color:var(--text-muted);">
+            This work proposes an efficient OCT image synthesis framework based on Latent Diffusion Models (LDM). A Variational Autoencoder (VAE) is integrated with a diffusion-based generative model to perform image synthesis in a compressed latent space, significantly reducing computational complexity while preserving structural information. Two configurations are explored: unconditional generation and conditional generation, where Sobel edge maps are used as structural guidance.
+          </div>
+        </div>
+
+        <div class="overview-cell">
+          <div class="cell-label">Model Architecture</div>
+          <div class="cell-value mono">LDM · VAE + U-Net · DDIM</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="fade-up d3">
+      <div class="section-heading"><div class="num">01</div>Problem Statement</div>
+      <p class="prose">Optical Coherence Tomography (OCT) is a non-invasive imaging technique widely used in ophthalmology for high-resolution cross-sectional imaging of retinal structures. It plays a crucial role in early detection of retinal diseases such as macular degeneration, diabetic retinopathy, and glaucoma. However, acquiring large-scale annotated OCT datasets is limited by three key challenges:</p>
+
+      <div class="challenge-grid">
+        <div class="challenge-card">
+          <div class="challenge-icon">🔒</div>
+          <div class="challenge-title">Patient Privacy</div>
+          <div class="challenge-desc">Strict patient privacy regulations severely restrict sharing of clinical OCT data across institutions.</div>
+        </div>
+        <div class="challenge-card">
+          <div class="challenge-icon">💸</div>
+          <div class="challenge-title">Expensive Acquisition</div>
+          <div class="challenge-desc">High-resolution OCT scans require specialized equipment and clinical expertise, making large datasets costly.</div>
+        </div>
+        <div class="challenge-card">
+          <div class="challenge-icon">📉</div>
+          <div class="challenge-title">Limited Annotations</div>
+          <div class="challenge-desc">Manual annotation by ophthalmologists is time-consuming, leading to a scarcity of labelled training data.</div>
+        </div>
+      </div>
+
+      <div class="section-heading"><div class="num">02</div>Why Diffusion Models?</div>
+      <p class="prose">Traditional generative approaches like GANs suffer from training instability and mode collapse, producing unrealistic OCT images. Transformers, while powerful, struggle with the fine-grained structural details of retinal layers. Diffusion models provide more stable training, higher sample diversity, and superior image quality — making them the ideal choice for medical image synthesis.</p>
+
+      <div class="section-heading"><div class="num">03</div>Proposed Solution</div>
+      <div class="solution-flow">
+        <div class="flow-step">
+          <div class="flow-dot">1</div>
+          <div class="flow-body">
+            <div class="flow-title">Latent Space Compression via VAE</div>
+            <div class="flow-desc">A Variational Autoencoder compresses 512×512 OCT images into a 16×64×64 latent space, reducing computational cost by ~4× while retaining structural information.</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-dot">2</div>
+          <div class="flow-body">
+            <div class="flow-title">Diffusion Process in Latent Space</div>
+            <div class="flow-desc">Gaussian noise is progressively added to latent representations over 1000 timesteps. A U-Net denoising network learns to reverse this process using MSE loss.</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-dot">3</div>
+          <div class="flow-body">
+            <div class="flow-title">Sobel Edge Conditioning</div>
+            <div class="flow-desc">In the conditional variant, Sobel edge maps extracted from real OCT images guide the generation process, improving anatomical consistency and layer sharpness.</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-dot">4</div>
+          <div class="flow-body">
+            <div class="flow-title">DDIM Sampling at Inference</div>
+            <div class="flow-desc">Denoising Diffusion Implicit Models (~50 steps) efficiently sample high-quality OCT images from the trained model during inference, decoded back to 512×512 pixel space.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="fade-up d3">
+      <div class="section-heading"><div class="num">04</div>Author</div>
+      <div class="team-card">
+        <div class="avatar">RK</div>
+        <div>
+          <div class="team-name">VT Rushi Kannan</div>
+          <div class="team-roll">2310080010</div>
+          <div class="team-dept">Department of Artificial Intelligence &amp; Data Science Engineering</div>
+        </div>
+      </div>
+      <div class="inst-block">
+        <div class="inst-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 21h18M9 21V7l9-4v18"/><rect x="9" y="11" width="4" height="4"/></svg>
+        </div>
+        <div>
+          <div class="inst-name">Koneru Lakshmaiah Education Foundation (KL University)</div>
+          <div class="inst-detail">Aziz Nagar – 500075, Hyderabad, Telangana<br/>Deemed to be University</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>OCT Generator &nbsp;·&nbsp; <span>VT Rushi Kannan · 2310080010</span> &nbsp;·&nbsp; KL University 2026</footer>
+</body>
+</html>

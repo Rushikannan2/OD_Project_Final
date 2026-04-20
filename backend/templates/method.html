@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Methodology — OCT Synthesis</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07080a; --surface: #0f1115; --surface2: #161a1f;
+      --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.14);
+      --accent: #00e5c0; --accent2: #0094ff; --accent-dim: rgba(0,229,192,0.10);
+      --text: #f0f2f5; --text-muted: #6b7280; --text-dim: #374151;
+      --mono: 'DM Mono', monospace; --sans: 'Syne', sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: linear-gradient(rgba(0,229,192,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,192,0.03) 1px, transparent 1px);
+      background-size: 48px 48px; pointer-events: none; z-index: 0;
+    }
+    body::after {
+      content: ''; position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
+      width: 700px; height: 500px;
+      background: radial-gradient(ellipse, rgba(0,148,255,0.05) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem; height: 60px;
+      background: rgba(7,8,10,0.88); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 11px; font-weight: 500; color: #07080a;
+    }
+    .nav-title { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
+    .nav-links { display: flex; align-items: center; gap: 2px; list-style: none; }
+    .nav-links a {
+      font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--text-muted); text-decoration: none;
+      padding: 6px 14px; border-radius: 6px; border: 1px solid transparent;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active {
+      color: var(--accent); border-color: rgba(0,229,192,0.2); background: rgba(0,229,192,0.05);
+    }
+
+    .page { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 4rem 2rem 5rem; }
+
+    .page-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent2); background: rgba(0,148,255,0.08); border: 1px solid rgba(0,148,255,0.2);
+      padding: 5px 14px; border-radius: 100px; margin-bottom: 1.5rem;
+    }
+    .page-eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); animation: blink 2s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    .page-title { font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+    .page-title span { background: linear-gradient(90deg, var(--accent2), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .page-sub { font-family: var(--mono); font-size: 13px; color: var(--text-muted); line-height: 1.7; max-width: 520px; margin-bottom: 3rem; }
+    .divider { height: 1px; background: var(--border); margin: 2.5rem 0; }
+
+    .section-heading {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: var(--text);
+      margin-bottom: 1.2rem;
+    }
+    .section-heading .num {
+      width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+      background: rgba(0,148,255,0.08); border: 1px solid rgba(0,148,255,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 11px; color: var(--accent2);
+    }
+    .prose { font-family: var(--mono); font-size: 13px; font-weight: 300; color: var(--text-muted); line-height: 1.85; margin-bottom: 1.5rem; }
+
+    /* PIPELINE DIAGRAM */
+    .pipeline {
+      display: flex; align-items: stretch; gap: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden; margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .pipe-step {
+      flex: 1; min-width: 120px; padding: 1.2rem 1rem;
+      border-right: 1px solid var(--border); position: relative;
+    }
+    .pipe-step:last-child { border-right: none; }
+    .pipe-arrow {
+      position: absolute; right: -8px; top: 50%; transform: translateY(-50%);
+      width: 16px; height: 16px;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 8px; color: var(--text-dim); z-index: 2;
+    }
+    .pipe-step:last-child .pipe-arrow { display: none; }
+    .pipe-num { font-family: var(--mono); font-size: 10px; color: var(--accent2); letter-spacing: 0.06em; margin-bottom: 6px; }
+    .pipe-name { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+    .pipe-detail { font-family: var(--mono); font-size: 10px; font-weight: 300; color: var(--text-muted); line-height: 1.5; }
+    .pipe-tag {
+      display: inline-block; margin-top: 8px;
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.04em;
+      color: var(--accent); background: var(--accent-dim); border: 1px solid rgba(0,229,192,0.15);
+      padding: 2px 7px; border-radius: 4px;
+    }
+
+    /* METHODOLOGY IMAGE */
+    .methodology-image-wrap {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      overflow: hidden; margin-bottom: 2rem; padding: 1.5rem;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+    }
+    .methodology-image-wrap img {
+      width: 100%; max-width: 800px; height: auto;
+      border-radius: 10px; display: block;
+      border: 1px solid var(--border);
+    }
+    .methodology-image-wrap .img-caption {
+      font-family: var(--mono); font-size: 11px; color: var(--text-dim);
+      text-align: center; letter-spacing: 0.04em;
+    }
+    /* Fallback when image fails to load */
+    .methodology-image-wrap img:not([src]),
+    .methodology-image-wrap img[src=""] {
+      display: none;
+    }
+    .img-fallback {
+      display: none;
+      width: 100%; padding: 2rem;
+      background: var(--surface2); border-radius: 10px; border: 1px dashed var(--border-hover);
+      text-align: center; font-family: var(--mono); font-size: 12px; color: var(--text-dim);
+    }
+
+    /* DATASETS */
+    .dataset-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 2rem; }
+    @media (max-width: 580px) { .dataset-grid { grid-template-columns: 1fr; } }
+    .dataset-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.2rem; transition: border-color 0.2s;
+    }
+    .dataset-card:hover { border-color: var(--border-hover); }
+    .dataset-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .dataset-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border); }
+    .dataset-row:last-child { border-bottom: none; }
+    .dataset-key { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+    .dataset-val { font-family: var(--mono); font-size: 10px; color: var(--text-muted); }
+
+    /* MODEL PARAMS TABLE */
+    .param-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
+    .param-table th {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-dim); padding: 10px 14px; text-align: left;
+      border-bottom: 1px solid var(--border); background: var(--surface2);
+    }
+    .param-table th:first-child { border-radius: 10px 0 0 0; }
+    .param-table th:last-child { border-radius: 0 10px 0 0; }
+    .param-table td {
+      font-family: var(--mono); font-size: 12px; padding: 9px 14px;
+      border-bottom: 1px solid var(--border); color: var(--text-muted);
+    }
+    .param-table td:first-child { color: var(--text); font-weight: 500; }
+    .param-table tr:last-child td { border-bottom: none; }
+    .param-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .param-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 2rem; }
+
+    /* COMPARISON TABLE */
+    .compare-grid { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 0; background: var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 2rem; }
+    .compare-header { background: var(--surface2); padding: 10px 14px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
+    .compare-header.highlight { color: var(--accent); background: rgba(0,229,192,0.05); }
+    .compare-cell { background: var(--surface); padding: 10px 14px; font-family: var(--mono); font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); }
+    .compare-cell.key { color: var(--text); font-weight: 500; }
+    .compare-cell.highlight { color: var(--accent); background: rgba(0,229,192,0.03); }
+
+    /* PREPROCESSING */
+    .preproc-steps { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 2rem; }
+    .preproc-pill {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      padding: 8px 14px;
+    }
+    .preproc-pill .arrow { font-family: var(--mono); font-size: 10px; color: var(--accent); }
+    .preproc-pill .label { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+    .preproc-pill .sub { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+
+    .fade-up { opacity: 0; transform: translateY(16px); animation: fadeUp 0.5s ease forwards; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+    .d1{animation-delay:0.05s} .d2{animation-delay:0.15s} .d3{animation-delay:0.25s}
+
+    footer { position: relative; z-index: 1; text-align: center; padding: 2rem; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em; }
+    footer span { color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="nav-brand">
+      <div class="nav-logo">OCT</div>
+      <span class="nav-title">Generator</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/about">About</a></li>
+      <li><a href="/method" class="active">Methodology</a></li>
+      <li><a href="/results">Results</a></li>
+    </ul>
+  </nav>
+
+  <div class="page">
+    <div class="fade-up d1">
+      <div class="page-eyebrow">Technical Approach</div>
+      <h1 class="page-title">Methodology &amp;<br/><span>Architecture</span></h1>
+      <p class="page-sub">A complete walkthrough of the Latent Diffusion Model pipeline, datasets, preprocessing, model hyperparameters, and experimental configurations.</p>
+    </div>
+
+    <!-- PIPELINE -->
+    <div class="fade-up d2">
+      <div class="section-heading"><div class="num">01</div>Full Pipeline Overview</div>
+
+      <!-- ✅ METHODOLOGY IMAGE — uses Flask /static/ path, works when served via Flask -->
+      <div class="methodology-image-wrap">
+        <img
+          src="/static/Methodology_OCT.png"
+          alt="OCT Methodology Pipeline Diagram"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+        />
+        <div class="img-fallback">
+          ⚠ Image could not be loaded.<br/>
+          Make sure <code>Methodology_OCT.png</code> is in your <code>backend/static/</code> folder<br/>
+          and you are running this through Flask (not opening the HTML file directly).
+        </div>
+        <div class="img-caption">Fig 1. — Full OCT Synthesis Pipeline Overview</div>
+      </div>
+
+      <!-- Pipeline steps -->
+      <div class="pipeline">
+        <div class="pipe-step">
+          <div class="pipe-num">01</div>
+          <div class="pipe-name">Data Collection</div>
+          <div class="pipe-detail">Gather OCT scans from multiple devices to analyze domain shift.</div>
+          <div class="pipe-tag">Diverse datasets</div>
+          <div class="pipe-arrow">→</div>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-num">02</div>
+          <div class="pipe-name">Preprocessing</div>
+          <div class="pipe-detail">Resize, normalize, and convert scans to tensors for model input.</div>
+          <div class="pipe-tag">Min-Max [-1,1]</div>
+          <div class="pipe-arrow">→</div>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-num">03</div>
+          <div class="pipe-name">VAE Encoding</div>
+          <div class="pipe-detail">Compress 512×512 images into 16×64×64 latent representations.</div>
+          <div class="pipe-tag">Latent space</div>
+          <div class="pipe-arrow">→</div>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-num">04</div>
+          <div class="pipe-name">Diffusion (UNet)</div>
+          <div class="pipe-detail">Denoise latents over 1000 timesteps with optional edge conditioning.</div>
+          <div class="pipe-tag">DDIM / Sobel</div>
+          <div class="pipe-arrow">→</div>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-num">05</div>
+          <div class="pipe-name">VAE Decoding</div>
+          <div class="pipe-detail">Reconstruct synthetic OCT images from denoised latent vectors.</div>
+          <div class="pipe-tag">512×512 output</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- DATASETS -->
+    <div class="fade-up d2">
+      <div class="section-heading"><div class="num">02</div>Datasets Used</div>
+      <p class="prose">Four OCT scanner datasets were studied for domain shift analysis. The primary training dataset is sourced from Heidelberg Spectralis due to its ultra-high axial resolution and excellent noise suppression characteristics.</p>
+      <div class="dataset-grid">
+        <div class="dataset-card">
+          <div class="dataset-name">Heidelberg Spectralis</div>
+          <div class="dataset-row"><span class="dataset-key">Axial Resolution</span><span class="dataset-val">~3.9 µm (ultra-high)</span></div>
+          <div class="dataset-row"><span class="dataset-key">Noise Handling</span><span class="dataset-val">Excellent suppression</span></div>
+          <div class="dataset-row"><span class="dataset-key">Layer Clarity</span><span class="dataset-val">Crisp &amp; well-defined</span></div>
+          <div class="dataset-row"><span class="dataset-key">Domain Shift</span><span class="dataset-val">Low (reference)</span></div>
+        </div>
+        <div class="dataset-card">
+          <div class="dataset-name">Topcon Maestro 2</div>
+          <div class="dataset-row"><span class="dataset-key">Axial Resolution</span><span class="dataset-val">~6 µm (high)</span></div>
+          <div class="dataset-row"><span class="dataset-key">Noise Handling</span><span class="dataset-val">Moderate noise</span></div>
+          <div class="dataset-row"><span class="dataset-key">Layer Clarity</span><span class="dataset-val">Slightly smooth</span></div>
+          <div class="dataset-row"><span class="dataset-key">Domain Shift</span><span class="dataset-val">Medium</span></div>
+        </div>
+        <div class="dataset-card">
+          <div class="dataset-name">Topcon Triton</div>
+          <div class="dataset-row"><span class="dataset-key">Axial Resolution</span><span class="dataset-val">~8 µm (moderate)</span></div>
+          <div class="dataset-row"><span class="dataset-key">Noise Handling</span><span class="dataset-val">High speckle noise</span></div>
+          <div class="dataset-row"><span class="dataset-key">Layer Clarity</span><span class="dataset-val">Washed textures</span></div>
+          <div class="dataset-row"><span class="dataset-key">Domain Shift</span><span class="dataset-val">High</span></div>
+        </div>
+        <div class="dataset-card">
+          <div class="dataset-name">Zeiss Cirrus</div>
+          <div class="dataset-row"><span class="dataset-key">Axial Resolution</span><span class="dataset-val">~5 µm (high)</span></div>
+          <div class="dataset-row"><span class="dataset-key">Noise Handling</span><span class="dataset-val">Moderate-high noise</span></div>
+          <div class="dataset-row"><span class="dataset-key">Layer Clarity</span><span class="dataset-val">Soft boundaries</span></div>
+          <div class="dataset-row"><span class="dataset-key">Domain Shift</span><span class="dataset-val">Medium-high</span></div>
+        </div>
+      </div>
+      <p class="prose" style="margin-top:0.5rem;">The 10K OCT dataset was split patient-wise to prevent data leakage: <strong style="color:var(--text)">70 patients / 8479 images</strong> for training, <strong style="color:var(--text)">8 patients / 976 images</strong> for validation, and <strong style="color:var(--text)">5 patients / 610 images</strong> for testing.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- PREPROCESSING -->
+    <div class="fade-up d3">
+      <div class="section-heading"><div class="num">03</div>Preprocessing Pipeline</div>
+      <p class="prose">All OCT images undergo a standardized preprocessing pipeline before entering the model. Min-Max Normalization was chosen over Histogram Equalization as it preserves natural intensity gradients essential for diffusion model training.</p>
+      <div class="preproc-steps">
+        <div class="preproc-pill"><span class="label">DICOM Input</span><span class="arrow">→</span></div>
+        <div class="preproc-pill"><span class="label">Grayscale Convert</span><span class="arrow">→</span></div>
+        <div class="preproc-pill"><span class="label">Resize 512×512</span><span class="arrow">→</span></div>
+        <div class="preproc-pill"><span class="label">Min-Max Normalize</span><span class="sub" style="margin-left:4px">[-1, 1]</span><span class="arrow">→</span></div>
+        <div class="preproc-pill"><span class="label">Tensor Conversion</span><span class="arrow">→</span></div>
+        <div class="preproc-pill"><span class="label">VAE Encoder</span></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- MODEL PARAMS -->
+    <div class="fade-up d3">
+      <div class="section-heading"><div class="num">04</div>Model Hyperparameters</div>
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead>
+            <tr><th>Parameter</th><th>Value / Meaning</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Input image size</td><td>1 × 512 × 512 (grayscale OCT)</td></tr>
+            <tr><td>Encoder downscale</td><td>512 → 256 → 128 → 64</td></tr>
+            <tr><td>Latent size</td><td>16 × 64 × 64</td></tr>
+            <tr><td>Compression ratio</td><td>512×512 → 16×64×64 (~4× smaller)</td></tr>
+            <tr><td>Decoder upscale</td><td>64 → 128 → 256 → 512</td></tr>
+            <tr><td>Reconstruction loss</td><td>L1 (pixel accuracy)</td></tr>
+            <tr><td>Perceptual loss</td><td>0.005 weight (structure realism)</td></tr>
+            <tr><td>KL divergence β</td><td>warmup → 1e-4</td></tr>
+            <tr><td>Learning rate</td><td>1e-4</td></tr>
+            <tr><td>Batch size</td><td>2–4</td></tr>
+            <tr><td>Mixed precision</td><td>Enabled</td></tr>
+            <tr><td>Diffusion timesteps</td><td>1000</td></tr>
+            <tr><td>UNet channels</td><td>16 → 128 → 256 → 512</td></tr>
+            <tr><td>DDIM inference steps</td><td>~50 steps</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- LDM vs DDPM -->
+    <div class="fade-up d3">
+      <div class="section-heading"><div class="num">05</div>Why LDM over Pixel DDPM?</div>
+      <p class="prose">The key architectural choice in this project is performing the diffusion process in a compressed latent space rather than directly in pixel space.</p>
+      <div class="compare-grid">
+        <div class="compare-header">Factor</div>
+        <div class="compare-header highlight">Latent Diffusion (LDM) ✓</div>
+        <div class="compare-header">Pixel DDPM</div>
+
+        <div class="compare-cell key">Compute requirement</div>
+        <div class="compare-cell highlight">Low</div>
+        <div class="compare-cell">Very high</div>
+
+        <div class="compare-cell key">GPU memory usage</div>
+        <div class="compare-cell highlight">Fits limited GPU</div>
+        <div class="compare-cell">Requires high-end GPU</div>
+
+        <div class="compare-cell key">Training time</div>
+        <div class="compare-cell highlight">Faster</div>
+        <div class="compare-cell">Very slow</div>
+
+        <div class="compare-cell key">Resolution handling</div>
+        <div class="compare-cell highlight">Efficient at 512×512</div>
+        <div class="compare-cell">Expensive at high res</div>
+
+        <div class="compare-cell key">Real-world usability</div>
+        <div class="compare-cell highlight">Suitable for projects</div>
+        <div class="compare-cell">Mostly research-scale</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- CONDITIONAL vs UNCONDITIONAL -->
+    <div class="fade-up d3">
+      <div class="section-heading"><div class="num">06</div>Unconditional vs Conditional LDM</div>
+      <p class="prose">Two experimental configurations were explored. The conditional variant uses Sobel edge maps extracted from real OCT images as additional input to the U-Net denoising network, providing structural guidance during the reverse diffusion process.</p>
+      <div class="compare-grid" style="grid-template-columns: 1.2fr 1fr 1fr;">
+        <div class="compare-header">Feature</div>
+        <div class="compare-header">Unconditional LDM</div>
+        <div class="compare-header highlight">Conditional LDM ✓</div>
+
+        <div class="compare-cell key">Definition</div>
+        <div class="compare-cell">Generates from noise only</div>
+        <div class="compare-cell highlight">Guided by Sobel edge maps</div>
+
+        <div class="compare-cell key">Input</div>
+        <div class="compare-cell">Random noise</div>
+        <div class="compare-cell highlight">Edge map + noise</div>
+
+        <div class="compare-cell key">Control over output</div>
+        <div class="compare-cell">None</div>
+        <div class="compare-cell highlight">High structural control</div>
+
+        <div class="compare-cell key">Anatomical consistency</div>
+        <div class="compare-cell">Limited</div>
+        <div class="compare-cell highlight">Improved layer clarity</div>
+
+        <div class="compare-cell key">Complexity</div>
+        <div class="compare-cell">Simpler</div>
+        <div class="compare-cell highlight">More complex</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>OCT Generator &nbsp;·&nbsp; <span>VT Rushi Kannan · 2310080010</span> &nbsp;·&nbsp; KL University 2026</footer>
+</body>
+</html>

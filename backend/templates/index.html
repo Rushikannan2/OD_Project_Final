@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OCT Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #07080a;
+      --surface: #0f1115;
+      --surface2: #161a1f;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(255,255,255,0.14);
+      --accent: #00e5c0;
+      --accent2: #0094ff;
+      --accent-dim: rgba(0,229,192,0.12);
+      --text: #f0f2f5;
+      --text-muted: #6b7280;
+      --text-dim: #374151;
+      --mono: 'DM Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* GRID BACKGROUND */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,192,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,192,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* GLOW ORB */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 500px;
+      background: radial-gradient(ellipse, rgba(0,229,192,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─── NAV ─────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2.5rem;
+      height: 60px;
+      background: rgba(7,8,10,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .nav-logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: #07080a;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--accent);
+      border-color: rgba(0,229,192,0.2);
+      background: rgba(0,229,192,0.05);
+    }
+
+    /* ─── HERO ─────────────────────────────── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      padding: 5rem 2.5rem 3rem;
+      text-align: center;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-dim);
+      border: 1px solid rgba(0,229,192,0.2);
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+      max-width: 440px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ─── MAIN CARD ─────────────────────────── */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1000px;
+      margin: 0 auto 4rem;
+      padding: 0 2rem;
+    }
+
+    .main-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    /* ─── TOOLBAR ──────────────────────────── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 1.8rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-generate {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #07080a;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 10px;
+      padding: 10px 22px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s, opacity 0.15s, box-shadow 0.15s;
+      box-shadow: 0 0 0 0 rgba(0,229,192,0);
+    }
+
+    .btn-generate::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: white;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .btn-generate:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 30px rgba(0,229,192,0.25);
+    }
+
+    .btn-generate:hover::after { opacity: 0.06; }
+
+    .btn-generate:active {
+      transform: translateY(0) scale(0.98);
+      box-shadow: none;
+    }
+
+    .btn-generate:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-generate svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      animation: none;
+    }
+
+    .btn-generate.spinning svg {
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 5px 13px;
+      transition: all 0.3s;
+    }
+
+    .status-pill .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      transition: background 0.3s;
+      flex-shrink: 0;
+    }
+
+    .status-pill.loading {
+      color: #f59e0b;
+      border-color: rgba(245,158,11,0.25);
+      background: rgba(245,158,11,0.06);
+    }
+
+    .status-pill.loading .dot {
+      background: #f59e0b;
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    .status-pill.done {
+      color: var(--accent);
+      border-color: rgba(0,229,192,0.25);
+      background: var(--accent-dim);
+    }
+
+    .status-pill.done .dot { background: var(--accent); }
+
+    .status-pill.error {
+      color: #f87171;
+      border-color: rgba(248,113,113,0.25);
+      background: rgba(248,113,113,0.06);
+    }
+
+    .status-pill.error .dot { background: #f87171; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* MODEL INFO CHIPS */
+    .info-chips {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chip {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 3px 9px;
+    }
+
+    /* ─── PANELS ───────────────────────────── */
+    .panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @media (max-width: 600px) {
+      .panels { grid-template-columns: 1fr; }
+      .panel + .panel { border-left: none; border-top: 1px solid var(--border); }
+    }
+
+    .panel {
+      padding: 1.8rem;
+    }
+
+    .panel + .panel {
+      border-left: 1px solid var(--border);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.2rem;
+    }
+
+    .panel-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .panel-label .icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .panel-label .icon.input-icon {
+      background: rgba(0,148,255,0.12);
+      color: var(--accent2);
+    }
+
+    .panel-label .icon.output-icon {
+      background: rgba(0,229,192,0.12);
+      color: var(--accent);
+    }
+
+    .panel-label .icon svg {
+      width: 11px;
+      height: 11px;
+    }
+
+    .panel-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      padding: 3px 9px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    /* ─── IMAGE FRAME ──────────────────────── */
+    .img-frame {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      background: var(--surface2);
+      transition: border-color 0.3s;
+    }
+
+    .img-frame:hover {
+      border-color: var(--border-hover);
+    }
+
+    .img-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      position: absolute;
+      inset: 0;
+    }
+
+    .img-frame img.visible {
+      opacity: 1;
+    }
+
+    .img-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: opacity 0.3s;
+    }
+
+    .img-placeholder.hidden { opacity: 0; pointer-events: none; }
+
+    .placeholder-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid var(--border-hover);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+    }
+
+    .placeholder-icon svg { width: 18px; height: 18px; }
+
+    .placeholder-text {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+    }
+
+    /* SCAN LINE EFFECT */
+    .img-frame .scanlines {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.04) 2px,
+        rgba(0,0,0,0.04) 4px
+      );
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .img-frame:hover .scanlines { opacity: 1; }
+
+    /* SKELETON */
+    .skeleton-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      display: none;
+      overflow: hidden;
+      background: var(--surface2);
+    }
+
+    .skeleton-overlay::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        100deg,
+        transparent 20%,
+        rgba(255,255,255,0.04) 50%,
+        transparent 80%
+      );
+      animation: sweep 1.6s linear infinite;
+    }
+
+    @keyframes sweep {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(100%); }
+    }
+
+    .loading-active .skeleton-overlay { display: block; }
+
+    /* CORNER BRACKETS */
+    .img-frame::before,
+    .img-frame::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      z-index: 4;
+      opacity: 0.4;
+    }
+
+    .img-frame::before {
+      top: 8px;
+      left: 8px;
+      border-top: 1.5px solid var(--accent);
+      border-left: 1.5px solid var(--accent);
+      border-radius: 2px 0 0 0;
+    }
+
+    .img-frame::after {
+      bottom: 8px;
+      right: 8px;
+      border-bottom: 1.5px solid var(--accent);
+      border-right: 1.5px solid var(--accent);
+      border-radius: 0 0 2px 0;
+    }
+
+    /* META STRIP */
+    .img-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+    }
+
+    .img-meta.visible { color: var(--text-muted); }
+
+    /* ─── FOOTER ───────────────────────────── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+
+    footer span { color: var(--text-muted); }
+
+    /* ─── ANIMATIONS ───────────────────────── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(16px);
+      animation: fadeUp 0.5s ease forwards;
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero { animation: fadeUp 0.5s ease 0.1s forwards; opacity: 0; }
+    .container { animation: fadeUp 0.5s ease 0.25s forwards; opacity: 0; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="nav-brand">
+      <div class="nav-logo">OCT</div>
+      <span class="nav-title">Generator</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="/" class="active">Home</a></li>
+      <li><a href="/about">About</a></li>
+      <li><a href="/method">Methodology</a></li>
+      <li><a href="/results">Results</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">Retinal Imaging AI</div>
+    <h1>OCT Image<br/><span>Generator</span></h1>
+    <p class="hero-sub">Synthesize optical coherence tomography images using a deep generative model trained on clinical retinal scans.</p>
+  </section>
+
+  <!-- MAIN -->
+  <div class="container">
+    <div class="main-card">
+
+      <!-- TOOLBAR -->
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <button class="btn-generate" id="genBtn" onclick="generateImage()">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" id="btnIcon">
+              <path d="M8 1v3M8 12v3M1 8h3M12 8h3M3.05 3.05l2.12 2.12M10.83 10.83l2.12 2.12M3.05 12.95l2.12-2.12M10.83 5.17l2.12-2.12"/>
+            </svg>
+            Generate
+          </button>
+          <div class="status-pill" id="statusPill">
+            <div class="dot"></div>
+            <span id="statusText">Ready</span>
+          </div>
+        </div>
+        <div class="info-chips">
+          <span class="chip">Conditional Latent Diffusion MOdel</span>
+          <span class="chip">512 × 512</span>
+        </div>
+      </div>
+
+      <!-- PANELS -->
+      <div class="panels">
+
+        <!-- INPUT -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-label">
+              <div class="icon input-icon">
+                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="10" height="10" rx="1.5"/><path d="M1 8l3-3 2 2 2-2.5 3 3"/></svg>
+              </div>
+              Input scan
+            </div>
+            <span class="panel-badge" id="inputBadge">—</span>
+          </div>
+          <div class="img-frame" id="inputFrame">
+            <div class="skeleton-overlay"></div>
+            <div class="scanlines"></div>
+            <div class="img-placeholder" id="inputPlaceholder">
+              <div class="placeholder-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+              </div>
+              <span class="placeholder-text">awaiting input</span>
+            </div>
+            <img id="input_img" alt="Input OCT image"
+              onload="revealImg(this, 'inputPlaceholder', 'inputFrame', 'inputBadge', 'inputMeta')"/>
+          </div>
+          <div class="img-meta" id="inputMeta">
+            <span>—</span><span>—</span>
+          </div>
+        </div>
+
+        <!-- OUTPUT -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-label">
+              <div class="icon output-icon">
+                <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 6h8M6 2l4 4-4 4"/></svg>
+              </div>
+              Generated output
+            </div>
+            <span class="panel-badge" id="outputBadge">—</span>
+          </div>
+          <div class="img-frame" id="outputFrame">
+            <div class="skeleton-overlay"></div>
+            <div class="scanlines"></div>
+            <div class="img-placeholder" id="outputPlaceholder">
+              <div class="placeholder-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              </div>
+              <span class="placeholder-text">run model to generate</span>
+            </div>
+            <img id="output_img" alt="Generated OCT image"
+              onload="revealImg(this, 'outputPlaceholder', 'outputFrame', 'outputBadge', 'outputMeta')"/>
+          </div>
+          <div class="img-meta" id="outputMeta">
+            <span>—</span><span>—</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    OCT Generator &nbsp;·&nbsp; <span>Deep Generative Model</span> &nbsp;·&nbsp; Retinal Imaging Research
+  </footer>
+
+  <script>
+    function setStatus(state, text) {
+      const pill = document.getElementById('statusPill');
+      pill.className = 'status-pill ' + state;
+      document.getElementById('statusText').textContent = text;
+    }
+
+    function revealImg(img, placeholderId, frameId, badgeId, metaId) {
+      img.classList.add('visible');
+      document.getElementById(placeholderId).classList.add('hidden');
+      document.getElementById(frameId).classList.remove('loading-active');
+      document.getElementById(badgeId).textContent = 'loaded';
+      const now = new Date();
+      const ts = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const meta = document.getElementById(metaId);
+      meta.innerHTML = '<span>512 × 512 px</span><span>' + ts + '</span>';
+      meta.classList.add('visible');
+    }
+
+    async function generateImage() {
+      const btn = document.getElementById('genBtn');
+      const btnIcon = document.getElementById('btnIcon');
+      const inputImg = document.getElementById('input_img');
+      const outputImg = document.getElementById('output_img');
+
+      btn.disabled = true;
+      btnIcon.style.animation = '';
+      btn.classList.add('spinning');
+
+      setStatus('loading', 'Generating...');
+
+      ['inputFrame','outputFrame'].forEach(id => {
+        document.getElementById(id).classList.add('loading-active');
+      });
+
+      ['inputPlaceholder','outputPlaceholder'].forEach(id => {
+        document.getElementById(id).classList.remove('hidden');
+      });
+
+      ['input_img','output_img'].forEach(id => {
+        document.getElementById(id).classList.remove('visible');
+      });
+
+      ['inputMeta','outputMeta'].forEach(id => {
+        const m = document.getElementById(id);
+        m.innerHTML = '<span>—</span><span>—</span>';
+        m.classList.remove('visible');
+      });
+
+      ['inputBadge','outputBadge'].forEach(id => {
+        document.getElementById(id).textContent = '—';
+      });
+
+      try {
+        const response = await fetch('/generate');
+        if (!response.ok) throw new Error('Network error');
+        const data = await response.json();
+        const t = Date.now();
+        inputImg.src = data.input + '?t=' + t;
+        outputImg.src = data.output + '?t=' + t;
+        setStatus('done', 'Done');
+      } catch (err) {
+        ['inputFrame','outputFrame'].forEach(id => {
+          document.getElementById(id).classList.remove('loading-active');
+        });
+        setStatus('error', 'Failed');
+        console.error(err);
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('spinning');
+      }
+    }
+  </script>
+</body>
+</html>
